@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/SourceRegistry/sveltekit-eventsource/compare/v1.0.0...v1.0.1) (2026-01-02)
+
+
+### Bug Fixes
+
+* update homepage ([2a82394](https://github.com/SourceRegistry/sveltekit-eventsource/commit/2a823948e59a05a4423d076a4e8daa8a4867bd34))
+
 # 1.0.0 (2026-01-02)
 
 
