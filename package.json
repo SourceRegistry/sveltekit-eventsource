@@ -89,7 +89,7 @@
   "bugs": {
     "url": "https://github.com/SourceRegistry/sveltekit-eventsource/issues"
   },
-  "homepage": "https://github.com/SourceRegistry/sveltekit-eventsource#readme",
+  "homepage": "https://sourceregistry.github.io/sveltekit-eventsource/",
   "publishConfig": {
     "access": "public"
   },
