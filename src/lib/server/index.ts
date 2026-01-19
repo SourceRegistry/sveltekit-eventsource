@@ -1,6 +1,6 @@
-import { EventEmitter } from "node:events";
-import { MagicEventType } from "../index.js";
-import { type DebugLogger, encodeMagicMessage, invariant } from "../protocol.js";
+import {EventEmitter} from "node:events";
+import {MagicEventType} from "../index.js";
+import {type DebugLogger, encodeMagicMessage, invariant} from "../protocol.js";
 
 /**
  * A single SSE message block produced by the server.
@@ -221,7 +221,7 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
         message: App.Events[S][E] | App.Events[S][E][],
         id?: number
     ): boolean {
-        return this.enqueue({ event: String(event), data: message as any, id });
+        return this.enqueue({event: String(event), data: message as any, id});
     }
 
     /**
@@ -239,7 +239,7 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
          * @param options - Optional SSE `id` and `event` fields.
          */
         send: (data: any, options?: Partial<{ id: number; event: string }>): boolean =>
-            this.enqueue({ id: options?.id, event: options?.event, data }),
+            this.enqueue({id: options?.id, event: options?.event, data}),
 
         /**
          * Lifecycle events (`open`, `close`, `ping`) for the SSE stream.
@@ -289,8 +289,15 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
 
         this.write(`event: ${MagicEventType}\n`);
         this.write(`data: ${data}\n\n`);
+        this.unsafe.events.removeAllListeners();
         return true;
     }
+
+    removeAllListeners(eventName?: keyof EventSourceEventMap) {
+        this.unsafe.events.removeAllListeners(eventName);
+        return this;
+    }
+
 
     /**
      * Create a SvelteKit `Response` that streams Server-Sent Events.
@@ -310,7 +317,7 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
                 this.open = true;
 
                 // Tell the browser how long to wait before attempting to reconnect
-                this.enqueue({ retry: this.config.retry_interval });
+                this.enqueue({retry: this.config.retry_interval});
 
                 // Keep-alive ping (SSE comment)
                 this.pingTimer = setInterval(() => {
@@ -333,6 +340,7 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
                 }
 
                 this.unsafe.events.emit("close");
+                this.unsafe.events.removeAllListeners();
             },
         });
 
