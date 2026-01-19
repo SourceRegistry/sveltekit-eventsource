@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/SourceRegistry/sveltekit-eventsource/compare/v1.1.0...v1.1.1) (2026-01-19)
+
+
+### Bug Fixes
+
+* update pipeline ([ab402ee](https://github.com/SourceRegistry/sveltekit-eventsource/commit/ab402ee0b1c585eeba9528b6e7480db2c7764caf))
+
 # [1.1.0](https://github.com/SourceRegistry/sveltekit-eventsource/compare/v1.0.1...v1.1.0) (2026-01-19)
 
 
