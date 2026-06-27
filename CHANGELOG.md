@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/SourceRegistry/sveltekit-eventsource/compare/v1.1.1...v1.1.2) (2026-06-27)
+
+
+### Bug Fixes
+
+* update dependencies and cleanup README.md ([fbdece5](https://github.com/SourceRegistry/sveltekit-eventsource/commit/fbdece5e94ffcef2ee3950049542d2ffdb35f26c))
+
 ## [1.1.1](https://github.com/SourceRegistry/sveltekit-eventsource/compare/v1.1.0...v1.1.1) (2026-01-19)
 
 
