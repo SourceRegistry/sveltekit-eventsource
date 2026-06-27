@@ -1,6 +1,6 @@
 import {EventEmitter} from "node:events";
 import {MagicEventType} from "../index.js";
-import {type DebugLogger, encodeMagicMessage, invariant} from "../protocol.js";
+import {type DebugLogger, encodeMagicMessage} from "../protocol.js";
 
 /**
  * A single SSE message block produced by the server.
@@ -279,17 +279,10 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
     stop(): boolean {
         if (!this.open || !this.controller) return false;
 
-        // Protocol control message MUST bypass user serializer
-        const data = encodeMagicMessage("close");
-
-        // Basic runtime assertion: avoid newline injection in event name
-        invariant(!MagicEventType.includes("\n"), "MagicEventType must not contain newlines");
-
         this.log?.debug?.("[sse] sending magic close");
 
         this.write(`event: ${MagicEventType}\n`);
-        this.write(`data: ${data}\n\n`);
-        this.unsafe.events.removeAllListeners();
+        this.write(`data: ${encodeMagicMessage("close")}\n\n`);
         return true;
     }
 
@@ -297,7 +290,6 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
         this.unsafe.events.removeAllListeners(eventName);
         return this;
     }
-
 
     /**
      * Create a SvelteKit `Response` that streams Server-Sent Events.
@@ -355,4 +347,3 @@ export class EventSource<S extends keyof App.Events = keyof App.Events> {
     }
 }
 
-export default EventSource;

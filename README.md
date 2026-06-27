@@ -1,53 +1,39 @@
 
 # @sourceregistry/sveltekit-eventsource
+
 [![npm version](https://img.shields.io/npm/v/@sourceregistry/sveltekit-eventsource?logo=npm)](https://www.npmjs.com/package/@sourceregistry/sveltekit-eventsource)
 [![License](https://img.shields.io/npm/l/@sourceregistry/sveltekit-eventsource)](https://github.com/SourceRegistry/sveltekit-eventsource/blob/main/LICENSE)
-[![CI](https://github.com/SourceRegistry/sveltekit-eventsource/actions/workflows/test.yml/badge.svg)](https://github.com/SourceRegistry/sveltekit-eventsource/actions)
+[![CI](https://github.com/SourceRegistry/sveltekit-eventsource/actions/workflows/ci.yml/badge.svg)](https://github.com/SourceRegistry/sveltekit-eventsource/actions)
 [![Codecov](https://img.shields.io/codecov/c/github/SourceRegistry/sveltekit-eventsource)](https://codecov.io/gh/SourceRegistry/sveltekit-eventsource)
 
-Typed **Server-Sent Events (SSE)** integration for **SvelteKit**, providing strongly-typed client–server communication, custom event channels, and a robust protocol-level control layer.
-
-This library is designed for **TypeScript-first**, production-grade SSE usage in SvelteKit applications.
+Typed **Server-Sent Events (SSE)** integration for **SvelteKit** — strongly-typed client–server communication, custom event channels, and a protocol-level control layer.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔒 **Strong typing end-to-end**
-  - Events are typed using `App.Events`
-  - Compile-time guarantees for event names and payloads
-- 🔄 **Bidirectional lifecycle control**
-  - Server-initiated close via a versioned protocol message
-  - Client-initiated close with proper cleanup
-- 🧠 **Protocol-level control channel**
-  - Control messages are **independent of user serializers**
-  - Versioned, validated, and future-proof
-- 🧩 **Custom event channels**
-  - Native SSE `event:` support
-  - Multiple application events per stream
-- 🛠 **Debug hooks**
-  - Optional structured logging on client and server
-- 📚 **First-class documentation**
-  - Full TSDoc coverage
-  - TypeDoc generation supported out of the box
+- **Strong typing end-to-end** — events are typed via `App.Events`, giving compile-time guarantees for both event names and payloads
+- **Bidirectional lifecycle control** — server-initiated close via a versioned protocol message; client-initiated close with proper cleanup
+- **Protocol-level control channel** — control messages bypass user serializers and are versioned, validated, and future-proof
+- **Custom event channels** — native SSE `event:` field support with multiple application events per stream
+- **Debug hooks** — optional structured logging on client and server
+- **Full TSDoc coverage** — TypeDoc generation supported out of the box
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install @sourceregistry/sveltekit-eventsource
-````
+```
 
-Peer dependency:
-
-* `svelte@^5`
+Peer dependency: `svelte@^5`
 
 ---
 
-## 🧠 Core Concept
+## Core Concept
 
-Events are defined centrally using SvelteKit’s `App.Events` interface:
+Events are defined centrally using SvelteKit's `App.Events` interface:
 
 ```ts
 // src/app.d.ts
@@ -64,18 +50,14 @@ declare global {
 export {};
 ```
 
-This single definition drives:
-
-* server-side `emit()` typing
-* client-side `on()` typing
-* compile-time safety across the entire SSE pipeline
+This single definition drives server-side `emit()` typing, client-side `on()` typing, and compile-time safety across the entire SSE pipeline.
 
 ---
 
-## 🖥 Server Usage (SvelteKit endpoint)
+## Server Usage
 
 ```ts
-//File: src/routes/sse/+server.ts
+// src/routes/sse/+server.ts
 import type { RequestHandler } from "./$types";
 import { EventSource } from "@sourceregistry/sveltekit-eventsource/server";
 
@@ -90,7 +72,7 @@ export const GET: RequestHandler = () => {
     clearInterval(timer);
   });
 
-  // Ask client to close after 5s
+  // Ask the client to close after 5 s
   setTimeout(() => {
     sse.stop();
   }, 5000);
@@ -99,16 +81,23 @@ export const GET: RequestHandler = () => {
 };
 ```
 
-### Server API Highlights
+### Server API
 
-* `emit(event, payload)`
-* `stop()` – protocol-level server-initiated close
-* `response()` – returns `Response` with `text/event-stream`
-* `unsafe.events` – lifecycle hooks (`open`, `close`, `ping`)
+| Method / Property | Description |
+|---|---|
+| `emit(event, payload, id?)` | Send a typed application event |
+| `stop()` | Send a protocol-level close request to the client |
+| `response(init?)` | Return a `Response` with `Content-Type: text/event-stream` |
+| `isOpen` | Whether the stream is currently open |
+| `on(event, handler)` | Subscribe to lifecycle events (`open`, `close`, `ping`) |
+| `once(event, handler)` | Subscribe once to a lifecycle event |
+| `off(event, handler)` | Unsubscribe from a lifecycle event |
+| `unsafe.send(data, opts?)` | Send an arbitrary untyped SSE message |
+| `unsafe.events` | Raw `EventEmitter` for lifecycle hooks |
 
 ---
 
-## 🌐 Client Usage (Svelte +page.svelte)
+## Client Usage
 
 ```svelte
 <script lang="ts">
@@ -121,7 +110,7 @@ export const GET: RequestHandler = () => {
   let es: EventSource<"status">;
 
   onMount(() => {
-    es = new EventSource("status", { debug: true });
+    es = new EventSource("/sse", { debug: true });
 
     es.onOpen(() => (state = "open"));
     es.onClose(() => (state = "closed"));
@@ -136,7 +125,7 @@ export const GET: RequestHandler = () => {
   });
 </script>
 
-<h2>Connection: {state === "open" ? "🟢" : "🔴"}</h2>
+<p>Connection: {state}</p>
 
 <ul>
   {#each events as e}
@@ -145,127 +134,97 @@ export const GET: RequestHandler = () => {
 </ul>
 ```
 
-### Client API Highlights
+### Client API
 
-* `on(event, handler)`
-* `once(event, handler)`
-* `off(event, handler)`
-* `onOpen`, `onClose`, `onError`, `onMessage`
-* `close()` – client-initiated close
+| Method | Description |
+|---|---|
+| `on(event, handler)` | Subscribe to a typed application event |
+| `once(event, handler)` | Subscribe once to a typed application event |
+| `off(event, handler)` | Unsubscribe a handler registered with `on` or `once` |
+| `onOpen(handler)` | Subscribe to the `open` lifecycle event |
+| `onClose(handler)` | Subscribe to the `close` lifecycle event |
+| `onError(handler)` | Subscribe to the `error` lifecycle event |
+| `onMessage(handler)` | Subscribe to default (unnamed) SSE messages |
+| `close()` | Initiate client-side close |
+| `readyState` | Native `EventSource.readyState` |
 
-All handlers are **fully typed**.
+All handlers are fully typed via `App.Events`.
 
 ---
 
-## 🔐 Magic Control Protocol (SMCP)
+## Control Protocol (SMCP)
 
-This library implements a **protocol-level control channel** for SSE, independent of user serialization.
+This library implements a protocol-level control channel independent of user serialization. User serializers (JSON, base64, msgpack, etc.) must not interfere with control messages such as server-requested close.
 
-### Why?
+**Wire format:**
 
-User serializers (JSON, base64, msgpack, etc.) must **never** break control messages like server-requested close.
-
-### Wire Format
-
-```text
+```
 event: __MAGIC_EVENT__
 data: {"v":1,"op":"close"}
 ```
 
-### Guarantees
+Control messages are always JSON, versioned (`v`), validated at runtime, and forward-compatible.
 
-* Always JSON
-* Versioned (`v`)
-* Validated at runtime
-* Future-proof
-
-Full specification:
-📄 `docs/sse-magic-protocol.md`
+Full specification: [`docs/sse-magic-protocol.md`](docs/sse-magic-protocol.md)
 
 ---
 
-## 🧪 Testing
+## Package Exports
 
-Protocol compatibility tests are included using **Vitest**.
+| Path | Purpose |
+|---|---|
+| `@sourceregistry/sveltekit-eventsource/client` | Browser client |
+| `@sourceregistry/sveltekit-eventsource/server` | SvelteKit server endpoint |
+
+---
+
+## Testing
+
+Protocol compatibility tests are included using **Vitest**:
 
 ```bash
 npm test
 ```
 
-Tests cover:
-
-* protocol encoding
-* version mismatch handling
-* schema validation
-* forward-compatibility safeguards
+Coverage includes protocol encoding, version mismatch handling, schema validation, and forward-compatibility safeguards.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-This project is fully documented using **TSDoc**.
-
-Generate API documentation:
+Generate API documentation with TypeDoc:
 
 ```bash
 npm run docs:build
 ```
 
-Output:
-
-```
-/docs
-```
+Output is written to `/docs`.
 
 ---
 
-## 📤 Package Exports
+## Requirements
 
-```ts
-import { EventSource } from "@sourceregistry/sveltekit-eventsource/client";
-import { EventSource } from "@sourceregistry/sveltekit-eventsource/server";
-```
-
-| Path       | Purpose              |
-| ---------- | -------------------- |
-| `./client` | Browser client SSE   |
-| `./server` | SvelteKit server SSE |
+- Node.js ≥ 16
+- SvelteKit application
+- Standard SSE (HTTP/1.1 compatible, no polyfills required)
 
 ---
 
-## ⚠️ Requirements & Notes
+## Roadmap
 
-* Node.js ≥ 16
-* Designed for **SvelteKit**
-* Uses standard SSE (HTTP/1.1 compatible)
-* No polyfills required
-
----
-
-## 🧭 Roadmap
-
-* [ ] Reconnect strategies & resume tokens
-* [ ] Backpressure diagnostics
-* [ ] Stream multiplexing
-* [ ] Protocol v2 extensions
+- [ ] Reconnect strategies and resume tokens
+- [ ] Backpressure diagnostics
+- [ ] Stream multiplexing
+- [ ] Protocol v2 extensions
 
 ---
 
-## 📄 License
+## Contributing
 
-Apache-2.0 © A.P.A. Slaa
-
----
-
-## 🧑‍💻 Author
-
-**A.P.A. Slaa**
-📧 [a.p.a.slaa@projectsource.nl](mailto:a.p.a.slaa@projectsource.nl)
-🌐 [https://github.com/SourceRegistry](https://github.com/SourceRegistry)
+Issues and pull requests are welcome. Please follow [Conventional Commits](https://www.conventionalcommits.org/) — this project uses semantic-release for automated versioning and changelog generation.
 
 ---
 
-## ⭐ Contributing
+## License
 
-Issues and pull requests are welcome.
-Please follow conventional commits for releases.
+Apache-2.0 © [A.P.A. Slaa](https://github.com/SourceRegistry)

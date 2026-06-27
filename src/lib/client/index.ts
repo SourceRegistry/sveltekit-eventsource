@@ -461,11 +461,15 @@ export class EventSource<S extends keyof App.Events>
         const type = String(eventType);
         const store = this.getWrapperStore(type);
 
-        const wrapper: EventListener = (e) =>
+        const wrapper: EventListener = (e) => {
             listener((e as CustomEvent).detail);
+            this.removeEventListener(eventType as any, wrapper as any);
+            store.delete(listener);
+            if (store.size === 0) this.wrapperMap.delete(type);
+        };
 
         store.set(listener, wrapper);
-        this.addEventListener(eventType as any, wrapper as any, { once: true });
+        this.addEventListener(eventType as any, wrapper as any);
         return this;
     }
 
